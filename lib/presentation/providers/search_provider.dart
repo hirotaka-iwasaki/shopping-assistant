@@ -1,0 +1,229 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../core/core.dart';
+import '../../data/data.dart';
+import '../../domain/domain.dart';
+import 'settings_provider.dart';
+
+/// Provider for the search service.
+final searchServiceProvider = Provider<SearchService>((ref) {
+  final service = SearchService();
+  ref.onDispose(() => service.dispose());
+  return service;
+});
+
+/// Current search query state.
+final searchQueryProvider = StateProvider<SearchQuery?>((ref) => null);
+
+/// Current sort option.
+final sortOptionProvider = StateProvider<SortOption>((ref) => SortOption.relevance);
+
+/// Free shipping filter.
+final freeShippingFilterProvider = StateProvider<bool>((ref) => false);
+
+/// Price range filter.
+final priceRangeProvider = StateProvider<PriceRange?>((ref) => null);
+
+class PriceRange {
+  const PriceRange({this.min, this.max});
+  final int? min;
+  final int? max;
+
+  bool get hasFilter => min != null || max != null;
+}
+
+/// Search state containing results and loading status.
+class SearchState {
+  const SearchState({
+    this.result,
+    this.isLoading = false,
+    this.error,
+    this.query,
+  });
+
+  final AggregatedSearchResult? result;
+  final bool isLoading;
+  final String? error;
+  final SearchQuery? query;
+
+  SearchState copyWith({
+    AggregatedSearchResult? result,
+    bool? isLoading,
+    String? error,
+    SearchQuery? query,
+  }) {
+    return SearchState(
+      result: result ?? this.result,
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
+      query: query ?? this.query,
+    );
+  }
+
+  bool get hasResults => result != null && result!.allProducts.isNotEmpty;
+  bool get hasError => error != null;
+  bool get isEmpty => !isLoading && !hasError && !hasResults;
+
+  List<Product> get products => result?.allProducts ?? [];
+  int get totalCount => result?.totalCount ?? 0;
+}
+
+/// Main search state provider.
+final searchStateProvider =
+    StateNotifierProvider<SearchStateNotifier, SearchState>(
+  (ref) => SearchStateNotifier(ref),
+);
+
+class SearchStateNotifier extends StateNotifier<SearchState> {
+  SearchStateNotifier(this._ref) : super(const SearchState());
+
+  final Ref _ref;
+
+  SearchService get _searchService => _ref.read(searchServiceProvider);
+
+  /// Executes a search with the given keyword.
+  Future<void> search(String keyword) async {
+    if (keyword.trim().isEmpty) return;
+
+    // Get selected sources
+    final sourcesAsync = _ref.read(selectedSourcesProvider);
+    final sources = sourcesAsync.valueOrNull ?? [];
+
+    // Get filters
+    final freeShippingOnly = _ref.read(freeShippingFilterProvider);
+    final priceRange = _ref.read(priceRangeProvider);
+    final sortOption = _ref.read(sortOptionProvider);
+
+    final query = SearchQuery(
+      keyword: keyword.trim(),
+      sources: sources,
+      freeShippingOnly: freeShippingOnly,
+      minPrice: priceRange?.min,
+      maxPrice: priceRange?.max,
+      sortBy: sortOption,
+    );
+
+    await searchWithQuery(query);
+
+    // Add to search history
+    _ref.read(searchHistoryProvider.notifier).add(keyword.trim());
+  }
+
+  /// Executes a search with a full query object.
+  Future<void> searchWithQuery(SearchQuery query) async {
+    state = state.copyWith(isLoading: true, error: null, query: query);
+    _ref.read(searchQueryProvider.notifier).state = query;
+
+    try {
+      final result = await _searchService.search(query);
+
+      if (result.isSuccess) {
+        state = SearchState(
+          result: result.result,
+          isLoading: false,
+          query: query,
+        );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: result.errorMessage,
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Search failed', tag: 'SearchProvider', error: e);
+      state = state.copyWith(
+        isLoading: false,
+        error: '検索中にエラーが発生しました',
+      );
+    }
+  }
+
+  /// Loads more results (next page).
+  Future<void> loadMore() async {
+    final currentQuery = state.query;
+    if (currentQuery == null || state.isLoading) return;
+
+    final hasMore = state.result?.resultsBySource.values
+            .any((r) => r.hasMore) ??
+        false;
+    if (!hasMore) return;
+
+    final nextQuery = currentQuery.nextPage();
+    await searchWithQuery(nextQuery);
+  }
+
+  /// Refreshes the current search.
+  Future<void> refresh() async {
+    final currentQuery = state.query;
+    if (currentQuery == null) return;
+
+    await searchWithQuery(currentQuery.firstPage());
+  }
+
+  /// Clears all search results.
+  void clear() {
+    state = const SearchState();
+    _ref.read(searchQueryProvider.notifier).state = null;
+  }
+
+  /// Updates the sort option and re-sorts results.
+  void updateSort(SortOption option) {
+    _ref.read(sortOptionProvider.notifier).state = option;
+
+    if (state.result != null) {
+      final sorted = _searchService.sortProducts(
+        state.result!.allProducts,
+        option,
+      );
+
+      state = state.copyWith(
+        result: AggregatedSearchResult(
+          resultsBySource: state.result!.resultsBySource,
+          allProducts: sorted,
+          totalCount: state.result!.totalCount,
+        ),
+      );
+    }
+  }
+}
+
+/// Filtered products based on current filters.
+final filteredProductsProvider = Provider<List<Product>>((ref) {
+  final searchState = ref.watch(searchStateProvider);
+  final sortOption = ref.watch(sortOptionProvider);
+  final freeShippingOnly = ref.watch(freeShippingFilterProvider);
+  final priceRange = ref.watch(priceRangeProvider);
+  final selectedSources = ref.watch(selectedSourcesProvider).valueOrNull;
+
+  if (!searchState.hasResults) return [];
+
+  final searchService = ref.read(searchServiceProvider);
+
+  var products = searchService.filterProducts(
+    searchState.products,
+    freeShippingOnly: freeShippingOnly ? true : null,
+    minPrice: priceRange?.min,
+    maxPrice: priceRange?.max,
+    sources: selectedSources,
+  );
+
+  products = searchService.sortProducts(products, sortOption);
+
+  return products;
+});
+
+/// Price statistics for filtered products.
+final priceStatsProvider = Provider<PriceStats?>((ref) {
+  final products = ref.watch(filteredProductsProvider);
+  if (products.isEmpty) return null;
+
+  final searchService = ref.read(searchServiceProvider);
+  return searchService.getPriceStats(products);
+});
+
+/// Source-specific results.
+final sourceResultsProvider =
+    Provider.family<SearchResult?, EcSource>((ref, source) {
+  final searchState = ref.watch(searchStateProvider);
+  return searchState.result?.resultsBySource[source];
+});
