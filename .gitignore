@@ -53,6 +53,11 @@ app.*.map.json
 /android/gradlew
 /android/gradlew.bat
 
+# Android signing
+android/key.properties
+android/keystore/
+*.jks
+
 # iOS
 /ios/Pods/
 /ios/.symlinks/
@@ -73,9 +78,7 @@ app.*.map.json
 .env
 !.env.example
 
-# Generated code (build_runner)
-*.g.dart
-*.freezed.dart
+# Generated code (mocks only - .g.dart and .freezed.dart are committed)
 *.mocks.dart
 
 # Test artifacts
