@@ -1,16 +1,84 @@
-# shopping_assistant
+# ショッピング比較アプリ (Shopping Assistant)
 
-A new Flutter project.
+複数のECサイトから商品を横断検索し、最安値を見つけるモバイルアプリです。
 
-## Getting Started
+## 機能
 
-This project is a starting point for a Flutter application.
+- **横断検索**: Amazon、楽天市場、Yahoo!ショッピングの商品を一括検索
+- **実質価格比較**: ポイント還元・送料を考慮した実質価格で比較
+- **スマートソート**: 価格順、ポイント順、レビュー順でソート
+- **フィルタリング**: 価格帯、送料無料、在庫ありで絞り込み
 
-A few resources to get you started if this is your first Flutter project:
+## スクリーンショット
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+*開発中*
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 技術スタック
+
+- **Flutter** - クロスプラットフォームモバイル開発
+- **Riverpod** - 状態管理
+- **Dio** - HTTPクライアント
+- **Freezed** - イミュータブルデータモデル
+
+## 対応API
+
+| ECサイト | API | ステータス |
+|----------|-----|-----------|
+| Amazon | Product Advertising API 5.0 | 対応済み |
+| 楽天市場 | 楽天商品検索API | 対応済み |
+| Yahoo!ショッピング | ショッピングWeb API | 対応済み |
+
+## セットアップ
+
+### 必要要件
+
+- Flutter 3.10以上
+- FVM (Flutter Version Management) 推奨
+
+### インストール
+
+```bash
+# リポジトリをクローン
+git clone https://github.com/hirotaka-iwasaki/shopping-assistant.git
+cd shopping-assistant
+
+# FVMでFlutterをセットアップ
+fvm install
+fvm use
+
+# 依存関係をインストール
+fvm flutter pub get
+
+# コード生成
+fvm dart run build_runner build
+
+# アプリを実行
+fvm flutter run
+```
+
+### 環境変数
+
+`.env.example` をコピーして `.env` を作成し、APIキーを設定してください：
+
+```bash
+cp .env.example .env
+```
+
+## アフィリエイトについて
+
+本アプリはアフィリエイトプログラムを利用しています：
+
+- Amazonアソシエイト・プログラム
+- 楽天アフィリエイト
+- バリューコマース（Yahoo!ショッピング）
+
+商品リンクから購入された場合、アプリ運営者に報酬が支払われることがあります。
+これによりユーザーに追加費用が発生することはありません。
+
+## ライセンス
+
+MIT License
+
+## 開発者
+
+Hirotaka Iwasaki
