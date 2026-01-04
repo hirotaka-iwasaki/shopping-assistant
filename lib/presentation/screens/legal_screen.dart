@@ -17,7 +17,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
           children: [
             _SectionTitle('はじめに'),
             _SectionBody(
-              'オトクダ（以下「本アプリ」）は、ユーザーの皆様のプライバシーを尊重し、'
+              'ヨコダン（以下「本アプリ」）は、ユーザーの皆様のプライバシーを尊重し、'
               '個人情報の保護に努めています。本プライバシーポリシーでは、本アプリがどのような情報を'
               '収集し、どのように利用するかについて説明します。',
             ),
@@ -92,7 +92,7 @@ class TermsOfServiceScreen extends StatelessWidget {
           children: [
             _SectionTitle('第1条（適用）'),
             _SectionBody(
-              '本規約は、オトクダ（以下「本アプリ」）の利用に関する条件を定めるものです。'
+              '本規約は、ヨコダン（以下「本アプリ」）の利用に関する条件を定めるものです。'
               'ユーザーは本アプリを利用することにより、本規約に同意したものとみなされます。',
             ),
             _SectionTitle('第2条（サービス内容）'),

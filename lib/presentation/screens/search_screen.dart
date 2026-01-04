@@ -30,7 +30,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('オトクダ'),
+        title: const Text('ヨコダン'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),

@@ -1,4 +1,4 @@
-# オトクダ (Shopping Assistant)
+# ヨコダン (Shopping Assistant)
 
 複数のECサイトから商品を横断検索し、最安値を見つけるモバイルアプリです。
 
