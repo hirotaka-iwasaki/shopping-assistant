@@ -140,6 +140,10 @@ class ProductRepository {
           return bScore.compareTo(aScore);
         });
         break;
+      case SortOption.unitPriceAsc:
+        // Unit price sort requires unit info parsing, done in SearchService
+        // Fall through to relevance for initial sort
+        break;
       case SortOption.relevance:
         // Keep original order (relevance from API)
         break;

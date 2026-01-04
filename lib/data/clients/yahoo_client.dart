@@ -126,6 +126,8 @@ class YahooClient implements EcClient {
         params['sort'] = '-review_count';
         break;
       case SortOption.relevance:
+      case SortOption.unitPriceAsc:
+        // Unit price sort is done client-side after fetching
         params['sort'] = '-score';
         break;
     }

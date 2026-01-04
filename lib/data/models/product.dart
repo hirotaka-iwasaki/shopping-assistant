@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../core/utils/exceptions.dart';
+import 'unit_info.dart';
 
 part 'product.freezed.dart';
 part 'product.g.dart';
@@ -56,6 +57,9 @@ class Product with _$Product {
 
     /// Whether the item is in stock
     @Default(true) bool inStock,
+
+    /// Unit information for price comparison (e.g., per 100g)
+    UnitInfo? unitInfo,
   }) = _Product;
 
   const Product._();
@@ -103,6 +107,28 @@ class Product with _$Product {
     if (points <= 0) return null;
     return '$points pt';
   }
+
+  /// Unit price (per 100g/100ml or per item).
+  /// Returns null if unit info is not available.
+  double? get unitPrice {
+    if (unitInfo == null) return null;
+    return unitInfo!.calculateUnitPrice(effectivePrice);
+  }
+
+  /// Formatted unit price string (e.g., "¥198/100g").
+  /// Returns null if unit info is not available.
+  String? get formattedUnitPrice {
+    if (unitInfo == null) return null;
+    return unitInfo!.formatUnitPrice(effectivePrice);
+  }
+
+  /// Whether unit price has high confidence.
+  bool get hasHighConfidenceUnitPrice =>
+      unitInfo != null && unitInfo!.isHighConfidence;
+
+  /// Whether unit price has medium confidence (show with asterisk).
+  bool get hasMediumConfidenceUnitPrice =>
+      unitInfo != null && unitInfo!.isMediumConfidence;
 
   static String _formatNumber(int number) {
     return number.toString().replaceAllMapped(

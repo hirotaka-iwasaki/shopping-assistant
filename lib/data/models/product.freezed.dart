@@ -68,6 +68,9 @@ mixin _$Product {
   /// Whether the item is in stock
   bool get inStock => throw _privateConstructorUsedError;
 
+  /// Unit information for price comparison (e.g., per 100g)
+  UnitInfo? get unitInfo => throw _privateConstructorUsedError;
+
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $ProductCopyWith<Product> get copyWith => throw _privateConstructorUsedError;
@@ -94,7 +97,10 @@ abstract class $ProductCopyWith<$Res> {
       String? storeName,
       String? description,
       int? originalPrice,
-      bool inStock});
+      bool inStock,
+      UnitInfo? unitInfo});
+
+  $UnitInfoCopyWith<$Res>? get unitInfo;
 }
 
 /// @nodoc
@@ -126,6 +132,7 @@ class _$ProductCopyWithImpl<$Res, $Val extends Product>
     Object? description = freezed,
     Object? originalPrice = freezed,
     Object? inStock = null,
+    Object? unitInfo = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -192,7 +199,23 @@ class _$ProductCopyWithImpl<$Res, $Val extends Product>
           ? _value.inStock
           : inStock // ignore: cast_nullable_to_non_nullable
               as bool,
+      unitInfo: freezed == unitInfo
+          ? _value.unitInfo
+          : unitInfo // ignore: cast_nullable_to_non_nullable
+              as UnitInfo?,
     ) as $Val);
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $UnitInfoCopyWith<$Res>? get unitInfo {
+    if (_value.unitInfo == null) {
+      return null;
+    }
+
+    return $UnitInfoCopyWith<$Res>(_value.unitInfo!, (value) {
+      return _then(_value.copyWith(unitInfo: value) as $Val);
+    });
   }
 }
 
@@ -219,7 +242,11 @@ abstract class _$$ProductImplCopyWith<$Res> implements $ProductCopyWith<$Res> {
       String? storeName,
       String? description,
       int? originalPrice,
-      bool inStock});
+      bool inStock,
+      UnitInfo? unitInfo});
+
+  @override
+  $UnitInfoCopyWith<$Res>? get unitInfo;
 }
 
 /// @nodoc
@@ -249,6 +276,7 @@ class __$$ProductImplCopyWithImpl<$Res>
     Object? description = freezed,
     Object? originalPrice = freezed,
     Object? inStock = null,
+    Object? unitInfo = freezed,
   }) {
     return _then(_$ProductImpl(
       id: null == id
@@ -315,6 +343,10 @@ class __$$ProductImplCopyWithImpl<$Res>
           ? _value.inStock
           : inStock // ignore: cast_nullable_to_non_nullable
               as bool,
+      unitInfo: freezed == unitInfo
+          ? _value.unitInfo
+          : unitInfo // ignore: cast_nullable_to_non_nullable
+              as UnitInfo?,
     ));
   }
 }
@@ -338,7 +370,8 @@ class _$ProductImpl extends _Product {
       this.storeName,
       this.description,
       this.originalPrice,
-      this.inStock = true})
+      this.inStock = true,
+      this.unitInfo})
       : super._();
 
   factory _$ProductImpl.fromJson(Map<String, dynamic> json) =>
@@ -410,9 +443,13 @@ class _$ProductImpl extends _Product {
   @JsonKey()
   final bool inStock;
 
+  /// Unit information for price comparison (e.g., per 100g)
+  @override
+  final UnitInfo? unitInfo;
+
   @override
   String toString() {
-    return 'Product(id: $id, title: $title, price: $price, imageUrl: $imageUrl, productUrl: $productUrl, source: $source, shippingCost: $shippingCost, isFreeShipping: $isFreeShipping, pointRate: $pointRate, pointValue: $pointValue, reviewScore: $reviewScore, reviewCount: $reviewCount, storeName: $storeName, description: $description, originalPrice: $originalPrice, inStock: $inStock)';
+    return 'Product(id: $id, title: $title, price: $price, imageUrl: $imageUrl, productUrl: $productUrl, source: $source, shippingCost: $shippingCost, isFreeShipping: $isFreeShipping, pointRate: $pointRate, pointValue: $pointValue, reviewScore: $reviewScore, reviewCount: $reviewCount, storeName: $storeName, description: $description, originalPrice: $originalPrice, inStock: $inStock, unitInfo: $unitInfo)';
   }
 
   @override
@@ -446,7 +483,9 @@ class _$ProductImpl extends _Product {
                 other.description == description) &&
             (identical(other.originalPrice, originalPrice) ||
                 other.originalPrice == originalPrice) &&
-            (identical(other.inStock, inStock) || other.inStock == inStock));
+            (identical(other.inStock, inStock) || other.inStock == inStock) &&
+            (identical(other.unitInfo, unitInfo) ||
+                other.unitInfo == unitInfo));
   }
 
   @JsonKey(ignore: true)
@@ -468,7 +507,8 @@ class _$ProductImpl extends _Product {
       storeName,
       description,
       originalPrice,
-      inStock);
+      inStock,
+      unitInfo);
 
   @JsonKey(ignore: true)
   @override
@@ -501,7 +541,8 @@ abstract class _Product extends Product {
       final String? storeName,
       final String? description,
       final int? originalPrice,
-      final bool inStock}) = _$ProductImpl;
+      final bool inStock,
+      final UnitInfo? unitInfo}) = _$ProductImpl;
   const _Product._() : super._();
 
   factory _Product.fromJson(Map<String, dynamic> json) = _$ProductImpl.fromJson;
@@ -570,6 +611,10 @@ abstract class _Product extends Product {
 
   /// Whether the item is in stock
   bool get inStock;
+  @override
+
+  /// Unit information for price comparison (e.g., per 100g)
+  UnitInfo? get unitInfo;
   @override
   @JsonKey(ignore: true)
   _$$ProductImplCopyWith<_$ProductImpl> get copyWith =>

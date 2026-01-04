@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/core.dart';
 import '../../data/data.dart';
 import '../providers/search_provider.dart';
 import '../widgets/loading_indicator.dart';
-import '../widgets/product_card.dart';
-import 'product_detail_screen.dart';
+import '../widgets/product_expansion_tile.dart';
 
 /// Screen displaying search results.
 class SearchResultsScreen extends ConsumerWidget {
@@ -74,14 +74,17 @@ class SearchResultsScreen extends ConsumerWidget {
       );
     }
 
+    final availableSources = ref.watch(availableSourcesProvider);
+    final excludedSources = ref.watch(excludedSourcesProvider);
+
     return RefreshIndicator(
       onRefresh: () => ref.read(searchStateProvider.notifier).refresh(),
       child: CustomScrollView(
         slivers: [
-          // Results count
+          // Results count and unit price availability
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
               child: Row(
                 children: [
                   Text(
@@ -90,6 +93,8 @@ class SearchResultsScreen extends ConsumerWidget {
                           color: Theme.of(context).colorScheme.outline,
                         ),
                   ),
+                  const SizedBox(width: 8),
+                  _buildUnitPriceStats(context, products),
                   const Spacer(),
                   if (searchState.isLoading)
                     const SizedBox(
@@ -101,26 +106,44 @@ class SearchResultsScreen extends ConsumerWidget {
               ),
             ),
           ),
-          // Product grid
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-                childAspectRatio: 0.58,
+          // Source filter buttons
+          if (availableSources.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: availableSources.entries.map((entry) {
+                    final source = entry.key;
+                    final count = entry.value;
+                    final isExcluded = excludedSources.contains(source);
+
+                    return _SourceFilterChip(
+                      source: source,
+                      count: count,
+                      isActive: !isExcluded,
+                      onTap: () {
+                        final notifier = ref.read(excludedSourcesProvider.notifier);
+                        if (isExcluded) {
+                          notifier.state = {...excludedSources}..remove(source);
+                        } else {
+                          notifier.state = {...excludedSources, source};
+                        }
+                      },
+                    );
+                  }).toList(),
+                ),
               ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final product = products[index];
-                  return ProductCard(
-                    product: product,
-                    onTap: () => _openProductDetail(context, product),
-                  );
-                },
-                childCount: products.length,
-              ),
+            ),
+          // Product list
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final product = products[index];
+                return ProductExpansionTile(product: product);
+              },
+              childCount: products.length,
             ),
           ),
           // Bottom padding
@@ -132,12 +155,100 @@ class SearchResultsScreen extends ConsumerWidget {
     );
   }
 
-  void _openProductDetail(BuildContext context, Product product) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => ProductDetailScreen(product: product),
+  Widget _buildUnitPriceStats(BuildContext context, List<Product> products) {
+    final withUnitPrice = products.where((p) => p.unitInfo != null).length;
+    if (withUnitPrice == 0) return const SizedBox.shrink();
+
+    final percentage = (withUnitPrice / products.length * 100).round();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        '単価判定 $percentage%',
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSecondaryContainer,
+            ),
       ),
     );
   }
+}
 
+/// Filter chip for toggling source visibility.
+class _SourceFilterChip extends StatelessWidget {
+  const _SourceFilterChip({
+    required this.source,
+    required this.count,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final EcSource source;
+  final int count;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  Color _getSourceColor() {
+    switch (source) {
+      case EcSource.amazon:
+        return const Color(0xFFFF9900);
+      case EcSource.rakuten:
+        return const Color(0xFFBF0000);
+      case EcSource.yahoo:
+        return const Color(0xFFFF0033);
+      case EcSource.qoo10:
+        return const Color(0xFFE91E63);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _getSourceColor();
+
+    return Material(
+      color: isActive ? color : Colors.grey.shade300,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                source.displayName,
+                style: TextStyle(
+                  color: isActive ? Colors.white : Colors.grey.shade600,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? Colors.white.withValues(alpha: 0.3)
+                      : Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '$count',
+                  style: TextStyle(
+                    color: isActive ? Colors.white : Colors.grey.shade600,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

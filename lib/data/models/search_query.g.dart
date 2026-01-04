@@ -42,8 +42,9 @@ const _$EcSourceEnumMap = {
 };
 
 const _$SortOptionEnumMap = {
-  SortOption.relevance: 'relevance',
+  SortOption.unitPriceAsc: 'unitPriceAsc',
   SortOption.priceAsc: 'priceAsc',
   SortOption.priceDesc: 'priceDesc',
+  SortOption.relevance: 'relevance',
   SortOption.reviewDesc: 'reviewDesc',
 };

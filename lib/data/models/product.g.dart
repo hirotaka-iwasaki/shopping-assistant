@@ -24,6 +24,9 @@ _$ProductImpl _$$ProductImplFromJson(Map<String, dynamic> json) =>
       description: json['description'] as String?,
       originalPrice: (json['originalPrice'] as num?)?.toInt(),
       inStock: json['inStock'] as bool? ?? true,
+      unitInfo: json['unitInfo'] == null
+          ? null
+          : UnitInfo.fromJson(json['unitInfo'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$ProductImplToJson(_$ProductImpl instance) =>
@@ -44,6 +47,7 @@ Map<String, dynamic> _$$ProductImplToJson(_$ProductImpl instance) =>
       'description': instance.description,
       'originalPrice': instance.originalPrice,
       'inStock': instance.inStock,
+      'unitInfo': instance.unitInfo,
     };
 
 const _$EcSourceEnumMap = {

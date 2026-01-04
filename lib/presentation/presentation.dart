@@ -15,5 +15,6 @@ export 'screens/settings_screen.dart';
 // Widgets
 export 'widgets/loading_indicator.dart';
 export 'widgets/product_card.dart';
+export 'widgets/product_expansion_tile.dart';
 export 'widgets/search_bar.dart';
 export 'widgets/source_badge.dart';

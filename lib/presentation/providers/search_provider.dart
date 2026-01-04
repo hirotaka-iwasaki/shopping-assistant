@@ -15,8 +15,11 @@ final searchServiceProvider = Provider<SearchService>((ref) {
 /// Current search query state.
 final searchQueryProvider = StateProvider<SearchQuery?>((ref) => null);
 
-/// Current sort option.
-final sortOptionProvider = StateProvider<SortOption>((ref) => SortOption.relevance);
+/// Current sort option (default to unit price for comparison).
+final sortOptionProvider = StateProvider<SortOption>((ref) => SortOption.unitPriceAsc);
+
+/// Sources to exclude from results (toggle filter).
+final excludedSourcesProvider = StateProvider<Set<EcSource>>((ref) => {});
 
 /// Search state containing results and loading status.
 class SearchState {
@@ -71,11 +74,15 @@ class SearchStateNotifier extends StateNotifier<SearchState> {
   Future<void> search(String keyword) async {
     if (keyword.trim().isEmpty) return;
 
+    // Reset filters and sort to defaults for new search
+    _ref.read(sortOptionProvider.notifier).state = SortOption.unitPriceAsc;
+    _ref.read(excludedSourcesProvider.notifier).state = {};
+
     // Get selected sources
     final sourcesAsync = _ref.read(selectedSourcesProvider);
     final sources = sourcesAsync.valueOrNull ?? [];
 
-    // Get sort option
+    // Get sort option (now reset to default)
     final sortOption = _ref.read(sortOptionProvider);
 
     final query = SearchQuery(
@@ -173,6 +180,7 @@ final filteredProductsProvider = Provider<List<Product>>((ref) {
   final searchState = ref.watch(searchStateProvider);
   final sortOption = ref.watch(sortOptionProvider);
   final selectedSources = ref.watch(selectedSourcesProvider).valueOrNull;
+  final excludedSources = ref.watch(excludedSourcesProvider);
 
   if (!searchState.hasResults) return [];
 
@@ -183,9 +191,29 @@ final filteredProductsProvider = Provider<List<Product>>((ref) {
     sources: selectedSources,
   );
 
+  // Filter out excluded sources
+  if (excludedSources.isNotEmpty) {
+    products = products.where((p) => !excludedSources.contains(p.source)).toList();
+  }
+
+  // Parse unit information for all products
+  products = searchService.parseUnitInfo(products);
+
   products = searchService.sortProducts(products, sortOption);
 
   return products;
+});
+
+/// Available sources in current search results (for filter UI).
+final availableSourcesProvider = Provider<Map<EcSource, int>>((ref) {
+  final searchState = ref.watch(searchStateProvider);
+  if (!searchState.hasResults) return {};
+
+  final counts = <EcSource, int>{};
+  for (final product in searchState.products) {
+    counts[product.source] = (counts[product.source] ?? 0) + 1;
+  }
+  return counts;
 });
 
 /// Price statistics for filtered products.

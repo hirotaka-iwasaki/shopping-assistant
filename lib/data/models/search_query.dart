@@ -55,14 +55,17 @@ class SearchQuery with _$SearchQuery {
 
 /// Sort options for search results.
 enum SortOption {
-  /// Most relevant first (default)
-  relevance('関連度順'),
+  /// Lowest unit price first (default for comparison)
+  unitPriceAsc('単価が安い順'),
 
   /// Lowest effective price first
   priceAsc('価格が安い順'),
 
   /// Highest effective price first
   priceDesc('価格が高い順'),
+
+  /// Most relevant first
+  relevance('関連度順'),
 
   /// Highest review score first
   reviewDesc('レビュー順');

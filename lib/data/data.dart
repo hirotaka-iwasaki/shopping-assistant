@@ -10,6 +10,7 @@ export 'clients/yahoo_client.dart';
 // Models
 export 'models/product.dart';
 export 'models/search_query.dart';
+export 'models/unit_info.dart';
 
 // Repositories
 export 'repositories/product_repository.dart';

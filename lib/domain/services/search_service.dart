@@ -1,5 +1,6 @@
 import '../../core/core.dart';
 import '../../data/data.dart';
+import 'unit_parser.dart';
 
 /// Service for handling product search operations.
 class SearchService {
@@ -124,6 +125,24 @@ class SearchService {
     final sorted = List<Product>.from(products);
 
     switch (sortBy) {
+      case SortOption.unitPriceAsc:
+        // Sort by unit price (products without unit info go to the end)
+        sorted.sort((a, b) {
+          final aUnitPrice = a.unitPrice;
+          final bUnitPrice = b.unitPrice;
+
+          // Both have unit price: compare normally
+          if (aUnitPrice != null && bUnitPrice != null) {
+            return aUnitPrice.compareTo(bUnitPrice);
+          }
+          // Only a has unit price: a comes first
+          if (aUnitPrice != null) return -1;
+          // Only b has unit price: b comes first
+          if (bUnitPrice != null) return 1;
+          // Neither has unit price: sort by effective price
+          return a.effectivePrice.compareTo(b.effectivePrice);
+        });
+        break;
       case SortOption.priceAsc:
         sorted.sort((a, b) => a.effectivePrice.compareTo(b.effectivePrice));
         break;
@@ -148,6 +167,21 @@ class SearchService {
     }
 
     return sorted;
+  }
+
+  /// Parses unit information for all products in a list.
+  List<Product> parseUnitInfo(List<Product> products) {
+    final parser = UnitParser.instance;
+    return products.map((product) {
+      if (product.unitInfo != null) return product;
+
+      final unitInfo = parser.parse(
+        product.title,
+        description: product.description,
+      );
+
+      return product.copyWith(unitInfo: unitInfo);
+    }).toList();
   }
 
   /// Gets price statistics for a list of products.
