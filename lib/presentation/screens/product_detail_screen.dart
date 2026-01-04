@@ -15,9 +15,12 @@ class ProductDetailScreen extends StatelessWidget {
   final Product product;
 
   Future<void> _openProductPage() async {
+    debugPrint('Opening URL: ${product.productUrl}');
     final uri = Uri.parse(product.productUrl);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      debugPrint('Cannot launch URL: ${product.productUrl}');
     }
   }
 

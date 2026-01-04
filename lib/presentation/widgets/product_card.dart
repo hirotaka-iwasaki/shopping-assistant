@@ -91,65 +91,69 @@ class ProductCard extends StatelessWidget {
               ),
             ),
             // Product info
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Title
-                  Text(
-                    product.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 4),
-                  // Final price (most prominent)
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.payments_outlined,
-                        size: 16,
-                        color: Colors.green.shade700,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        product.formattedEffectivePrice,
-                        style: theme.textTheme.titleMedium?.copyWith(
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title
+                    Text(
+                      product.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 4),
+                    // Final price (most prominent)
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.payments_outlined,
+                          size: 16,
                           color: Colors.green.shade700,
-                          fontWeight: FontWeight.bold,
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  // Base price
-                  _buildInfoRow(
-                    icon: Icons.sell_outlined,
-                    iconColor: colorScheme.outline,
-                    text: product.formattedPrice,
-                    textColor: colorScheme.outline,
-                    theme: theme,
-                  ),
-                  // Shipping
-                  _buildInfoRow(
-                    icon: Icons.local_shipping_outlined,
-                    iconColor: product.isFreeShipping ? Colors.green : colorScheme.outline,
-                    text: product.isFreeShipping ? '無料' : product.formattedShippingCost,
-                    textColor: product.isFreeShipping ? Colors.green : colorScheme.outline,
-                    theme: theme,
-                  ),
-                  // Points
-                  if (product.pointValue != null && product.pointValue! > 0)
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            product.formattedEffectivePrice,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: Colors.green.shade700,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    // Base price
                     _buildInfoRow(
-                      icon: Icons.redeem_outlined,
-                      iconColor: Colors.orange,
-                      text: '${product.pointValue}pt',
-                      textColor: Colors.orange,
+                      icon: Icons.sell_outlined,
+                      iconColor: colorScheme.outline,
+                      text: product.formattedPrice,
+                      textColor: colorScheme.outline,
                       theme: theme,
                     ),
-                ],
+                    // Shipping
+                    _buildInfoRow(
+                      icon: Icons.local_shipping_outlined,
+                      iconColor: product.isFreeShipping ? Colors.green : colorScheme.outline,
+                      text: product.isFreeShipping ? '無料' : product.formattedShippingCost,
+                      textColor: product.isFreeShipping ? Colors.green : colorScheme.outline,
+                      theme: theme,
+                    ),
+                    // Points
+                    if (product.pointValue != null && product.pointValue! > 0)
+                      _buildInfoRow(
+                        icon: Icons.redeem_outlined,
+                        iconColor: Colors.orange,
+                        text: '${product.pointValue}pt',
+                        textColor: Colors.orange,
+                        theme: theme,
+                      ),
+                  ],
+                ),
               ),
             ),
           ],

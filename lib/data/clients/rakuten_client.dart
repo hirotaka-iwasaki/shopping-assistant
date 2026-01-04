@@ -218,7 +218,7 @@ class RakutenClient implements EcClient {
         title: itemName,
         price: itemPrice,
         imageUrl: imageUrl,
-        productUrl: affiliateUrl ?? itemUrl,
+        productUrl: (affiliateUrl != null && affiliateUrl.isNotEmpty) ? affiliateUrl : itemUrl,
         source: EcSource.rakuten,
         isFreeShipping: isFreeShipping,
         pointRate: pointRateDecimal,

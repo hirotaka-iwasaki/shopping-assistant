@@ -18,7 +18,7 @@ final class _EnvConfig {
   static const String rakutenAppId = '1062173176194047294';
 
   static const String rakutenAffiliateId =
-      'ffd34c403d7046e3bd3836ebf35512bce1842328';
+      '4fba8165.b66ac33b.4fba8166.cf0c8c6c';
 
   static const String yahooAppId =
       'dj00aiZpPWxZVTRlc3hjSlM4MCZzPWNvbnN1bWVyc2VjcmV0Jng9Mjc-';
