@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/core.dart';
 import '../providers/search_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/loading_indicator.dart';
 import '../widgets/search_bar.dart';
-import '../widgets/source_badge.dart';
 import 'search_results_screen.dart';
 import 'settings_screen.dart';
 
@@ -32,7 +30,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ショッピング比較'),
+        title: const Text('オトクダ'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -47,68 +45,37 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Search bar
-              AppSearchBar(
+        child: Column(
+          children: [
+            // Search history
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _buildSearchHistory(),
+              ),
+            ),
+
+            // Search bar at bottom
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: AppSearchBar(
                 onSearch: _onSearch,
                 autofocus: false,
               ),
-              const SizedBox(height: 16),
-
-              // Source selection
-              _buildSourceSelection(),
-              const SizedBox(height: 24),
-
-              // Search history
-              Expanded(
-                child: _buildSearchHistory(),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
-
-  Widget _buildSourceSelection() {
-    final selectedSourcesAsync = ref.watch(selectedSourcesProvider);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '検索サイト',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-        ),
-        const SizedBox(height: 8),
-        selectedSourcesAsync.when(
-          data: (selectedSources) => Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final source in [EcSource.amazon, EcSource.rakuten, EcSource.yahoo])
-                SourceChip(
-                  source: source,
-                  isSelected: selectedSources.contains(source),
-                  onTap: () {
-                    ref.read(selectedSourcesProvider.notifier).toggle(source);
-                  },
-                ),
-            ],
-          ),
-          loading: () => const SizedBox(
-            height: 40,
-            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-          ),
-          error: (e, st) => Text('Error: $e'),
-        ),
-      ],
     );
   }
 

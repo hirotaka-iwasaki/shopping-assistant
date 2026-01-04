@@ -133,13 +133,6 @@ class ProductRepository {
       case SortOption.priceDesc:
         products.sort((a, b) => b.effectivePrice.compareTo(a.effectivePrice));
         break;
-      case SortOption.pointsDesc:
-        products.sort((a, b) {
-          final aPoints = a.pointValue ?? 0;
-          final bPoints = b.pointValue ?? 0;
-          return bPoints.compareTo(aPoints);
-        });
-        break;
       case SortOption.reviewDesc:
         products.sort((a, b) {
           final aScore = a.reviewScore ?? 0;
@@ -148,7 +141,6 @@ class ProductRepository {
         });
         break;
       case SortOption.relevance:
-      case SortOption.newest:
         // Keep original order (relevance from API)
         break;
     }

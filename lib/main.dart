@@ -20,7 +20,7 @@ class ShoppingAssistantApp extends ConsumerWidget {
     final themeModeAsync = ref.watch(themeModeProvider);
 
     return MaterialApp(
-      title: 'ショッピング比較',
+      title: 'オトクダ',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(

@@ -50,7 +50,8 @@ void main() {
         SingleChildScrollView(child: ProductCard(product: product)),
       ));
 
-      expect(find.text('¥12,345'), findsOneWidget);
+      // Effective price and base price are both displayed
+      expect(find.text('¥12,345'), findsWidgets);
     });
 
     testWidgets('displays source badge', (tester) async {

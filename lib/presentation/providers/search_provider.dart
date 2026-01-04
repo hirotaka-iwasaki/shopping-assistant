@@ -18,20 +18,6 @@ final searchQueryProvider = StateProvider<SearchQuery?>((ref) => null);
 /// Current sort option.
 final sortOptionProvider = StateProvider<SortOption>((ref) => SortOption.relevance);
 
-/// Free shipping filter.
-final freeShippingFilterProvider = StateProvider<bool>((ref) => false);
-
-/// Price range filter.
-final priceRangeProvider = StateProvider<PriceRange?>((ref) => null);
-
-class PriceRange {
-  const PriceRange({this.min, this.max});
-  final int? min;
-  final int? max;
-
-  bool get hasFilter => min != null || max != null;
-}
-
 /// Search state containing results and loading status.
 class SearchState {
   const SearchState({
@@ -89,17 +75,12 @@ class SearchStateNotifier extends StateNotifier<SearchState> {
     final sourcesAsync = _ref.read(selectedSourcesProvider);
     final sources = sourcesAsync.valueOrNull ?? [];
 
-    // Get filters
-    final freeShippingOnly = _ref.read(freeShippingFilterProvider);
-    final priceRange = _ref.read(priceRangeProvider);
+    // Get sort option
     final sortOption = _ref.read(sortOptionProvider);
 
     final query = SearchQuery(
       keyword: keyword.trim(),
       sources: sources,
-      freeShippingOnly: freeShippingOnly,
-      minPrice: priceRange?.min,
-      maxPrice: priceRange?.max,
       sortBy: sortOption,
     );
 
@@ -191,8 +172,6 @@ class SearchStateNotifier extends StateNotifier<SearchState> {
 final filteredProductsProvider = Provider<List<Product>>((ref) {
   final searchState = ref.watch(searchStateProvider);
   final sortOption = ref.watch(sortOptionProvider);
-  final freeShippingOnly = ref.watch(freeShippingFilterProvider);
-  final priceRange = ref.watch(priceRangeProvider);
   final selectedSources = ref.watch(selectedSourcesProvider).valueOrNull;
 
   if (!searchState.hasResults) return [];
@@ -201,9 +180,6 @@ final filteredProductsProvider = Provider<List<Product>>((ref) {
 
   var products = searchService.filterProducts(
     searchState.products,
-    freeShippingOnly: freeShippingOnly ? true : null,
-    minPrice: priceRange?.min,
-    maxPrice: priceRange?.max,
     sources: selectedSources,
   );
 

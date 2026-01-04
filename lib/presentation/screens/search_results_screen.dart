@@ -44,11 +44,6 @@ class SearchResultsScreen extends ConsumerWidget {
               );
             }).toList(),
           ),
-          // Filter button
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () => _showFilterSheet(context, ref),
-          ),
         ],
       ),
       body: _buildBody(context, ref, searchState, filteredProducts),
@@ -112,9 +107,9 @@ class SearchResultsScreen extends ConsumerWidget {
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 0.55,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                childAspectRatio: 0.58,
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
@@ -145,163 +140,4 @@ class SearchResultsScreen extends ConsumerWidget {
     );
   }
 
-  void _showFilterSheet(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => const _FilterSheet(),
-    );
-  }
-}
-
-class _FilterSheet extends ConsumerWidget {
-  const _FilterSheet();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final freeShippingOnly = ref.watch(freeShippingFilterProvider);
-    final priceRange = ref.watch(priceRangeProvider);
-
-    return DraggableScrollableSheet(
-      initialChildSize: 0.5,
-      minChildSize: 0.3,
-      maxChildSize: 0.8,
-      expand: false,
-      builder: (context, scrollController) {
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Handle bar
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.outline,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Title
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'フィルター',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      ref.read(freeShippingFilterProvider.notifier).state = false;
-                      ref.read(priceRangeProvider.notifier).state = null;
-                    },
-                    child: const Text('リセット'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Free shipping toggle
-              SwitchListTile(
-                title: const Text('送料無料のみ'),
-                value: freeShippingOnly,
-                onChanged: (value) {
-                  ref.read(freeShippingFilterProvider.notifier).state = value;
-                },
-              ),
-              const Divider(),
-              // Price range (simplified)
-              ListTile(
-                title: const Text('価格帯'),
-                subtitle: priceRange?.hasFilter == true
-                    ? Text(_formatPriceRange(priceRange!))
-                    : const Text('指定なし'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => _showPriceRangeDialog(context, ref),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  String _formatPriceRange(PriceRange range) {
-    if (range.min != null && range.max != null) {
-      return '¥${range.min} 〜 ¥${range.max}';
-    } else if (range.min != null) {
-      return '¥${range.min} 以上';
-    } else if (range.max != null) {
-      return '¥${range.max} 以下';
-    }
-    return '指定なし';
-  }
-
-  void _showPriceRangeDialog(BuildContext context, WidgetRef ref) {
-    final minController = TextEditingController();
-    final maxController = TextEditingController();
-    final currentRange = ref.read(priceRangeProvider);
-
-    if (currentRange?.min != null) {
-      minController.text = currentRange!.min.toString();
-    }
-    if (currentRange?.max != null) {
-      maxController.text = currentRange!.max.toString();
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('価格帯'),
-        content: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: minController,
-                decoration: const InputDecoration(
-                  labelText: '最低価格',
-                  prefixText: '¥',
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Text('〜'),
-            ),
-            Expanded(
-              child: TextField(
-                controller: maxController,
-                decoration: const InputDecoration(
-                  labelText: '最高価格',
-                  prefixText: '¥',
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final min = int.tryParse(minController.text);
-              final max = int.tryParse(maxController.text);
-              ref.read(priceRangeProvider.notifier).state = PriceRange(
-                min: min,
-                max: max,
-              );
-              Navigator.pop(context);
-            },
-            child: const Text('適用'),
-          ),
-        ],
-      ),
-    );
-  }
 }

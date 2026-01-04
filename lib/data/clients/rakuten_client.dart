@@ -67,6 +67,7 @@ class RakutenClient implements EcClient {
           if (_affiliateId.isNotEmpty) 'affiliateId': _affiliateId,
           'itemCode': id,
           'hits': 1,
+          'formatVersion': 2,
         },
       );
 
@@ -75,8 +76,8 @@ class RakutenClient implements EcClient {
 
       if (items == null || items.isEmpty) return null;
 
-      final itemWrapper = items.first as Map<String, dynamic>;
-      final item = itemWrapper['Item'] as Map<String, dynamic>;
+      // formatVersion: 2 returns items directly
+      final item = items.first as Map<String, dynamic>;
       return _parseItem(item);
     } on DioException catch (e) {
       final error = DioClient.handleError(e, EcSource.rakuten.displayName);
@@ -132,11 +133,9 @@ class RakutenClient implements EcClient {
       case SortOption.reviewDesc:
         params['sort'] = '-reviewAverage';
         break;
-      case SortOption.newest:
-        params['sort'] = '-updateTimestamp';
-        break;
-      default:
+      case SortOption.relevance:
         params['sort'] = 'standard';
+        break;
     }
 
     return params;
@@ -148,14 +147,12 @@ class RakutenClient implements EcClient {
     final pageCount = data['pageCount'] as int? ?? 1;
 
     final products = <Product>[];
-    for (final itemWrapper in items) {
-      final item = (itemWrapper as Map<String, dynamic>)['Item']
-          as Map<String, dynamic>?;
-      if (item != null) {
-        final product = _parseItem(item);
-        if (product != null) {
-          products.add(product);
-        }
+    for (final itemData in items) {
+      // formatVersion: 2 returns items directly without 'Item' wrapper
+      final item = itemData as Map<String, dynamic>;
+      final product = _parseItem(item);
+      if (product != null) {
+        products.add(product);
       }
     }
 

@@ -64,14 +64,8 @@ enum SortOption {
   /// Highest effective price first
   priceDesc('価格が高い順'),
 
-  /// Highest point rate first
-  pointsDesc('ポイント順'),
-
   /// Highest review score first
-  reviewDesc('レビュー順'),
-
-  /// Newest first
-  newest('新着順');
+  reviewDesc('レビュー順');
 
   const SortOption(this.displayName);
   final String displayName;

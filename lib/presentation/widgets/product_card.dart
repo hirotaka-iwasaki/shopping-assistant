@@ -21,11 +21,12 @@ class ProductCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Card(
-      clipBehavior: Clip.antiAlias,
+      clipBehavior: Clip.hardEdge,
       child: InkWell(
         onTap: onTap,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Image and badge
             AspectRatio(
@@ -70,30 +71,6 @@ class ProductCard extends StatelessWidget {
                       size: SourceBadgeSize.small,
                     ),
                   ),
-                  // Free shipping badge
-                  if (product.isFreeShipping)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          '送料無料',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
                   // Out of stock overlay
                   if (!product.inStock)
                     Positioned.fill(
@@ -115,36 +92,63 @@ class ProductCard extends StatelessWidget {
             ),
             // Product info
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Title
                   Text(
                     product.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium,
+                    style: theme.textTheme.bodySmall,
                   ),
-                  const SizedBox(height: 8),
-                  // Prices
-                  _buildPriceSection(theme, colorScheme),
-                  // Points
-                  if (product.formattedPoints != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      '+${product.formattedPoints}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.orange,
-                        fontWeight: FontWeight.bold,
+                  const SizedBox(height: 4),
+                  // Final price (most prominent)
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.payments_outlined,
+                        size: 16,
+                        color: Colors.green.shade700,
                       ),
+                      const SizedBox(width: 4),
+                      Text(
+                        product.formattedEffectivePrice,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: Colors.green.shade700,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Base price
+                  _buildInfoRow(
+                    icon: Icons.sell_outlined,
+                    iconColor: colorScheme.outline,
+                    text: product.formattedPrice,
+                    textColor: colorScheme.outline,
+                    theme: theme,
+                  ),
+                  // Shipping
+                  _buildInfoRow(
+                    icon: Icons.local_shipping_outlined,
+                    iconColor: product.isFreeShipping ? Colors.green : colorScheme.outline,
+                    text: product.isFreeShipping ? '無料' : product.formattedShippingCost,
+                    textColor: product.isFreeShipping ? Colors.green : colorScheme.outline,
+                    theme: theme,
+                  ),
+                  // Points
+                  if (product.pointValue != null && product.pointValue! > 0)
+                    _buildInfoRow(
+                      icon: Icons.redeem_outlined,
+                      iconColor: Colors.orange,
+                      text: '${product.pointValue}pt',
+                      textColor: Colors.orange,
+                      theme: theme,
                     ),
-                  ],
-                  // Reviews
-                  if (product.reviewScore != null) ...[
-                    const SizedBox(height: 4),
-                    _buildReviewSection(theme),
-                  ],
                 ],
               ),
             ),
@@ -154,65 +158,25 @@ class ProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPriceSection(ThemeData theme, ColorScheme colorScheme) {
-    final hasDiscount = product.price != product.effectivePrice;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Main price
-        Text(
-          product.formattedPrice,
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: colorScheme.primary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        // Effective price (if different)
-        if (hasDiscount)
-          Text(
-            '実質 ${product.formattedEffectivePrice}',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: Colors.green.shade700,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        // Shipping
-        Text(
-          product.formattedShippingCost,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: colorScheme.outline,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildReviewSection(ThemeData theme) {
-    return Row(
-      children: [
-        Icon(
-          Icons.star,
-          size: 14,
-          color: Colors.amber.shade700,
-        ),
-        const SizedBox(width: 2),
-        Text(
-          product.reviewScore!.toStringAsFixed(1),
-          style: theme.textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        if (product.reviewCount != null) ...[
+  Widget _buildInfoRow({
+    required IconData icon,
+    required Color iconColor,
+    required String text,
+    required Color textColor,
+    required ThemeData theme,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Row(
+        children: [
+          Icon(icon, size: 12, color: iconColor),
           const SizedBox(width: 4),
           Text(
-            '(${product.reviewCount})',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.outline,
-            ),
+            text,
+            style: theme.textTheme.labelSmall?.copyWith(color: textColor),
           ),
         ],
-      ],
+      ),
     );
   }
 }

@@ -119,14 +119,6 @@ void main() {
       expect(sorted[2].id, '2'); // 450
     });
 
-    test('sorts by points descending', () {
-      final sorted = searchService.sortProducts(products, SortOption.pointsDesc);
-
-      expect(sorted[0].id, '3'); // 200 points
-      expect(sorted[1].id, '1'); // 100 points
-      expect(sorted[2].id, '2'); // 50 points
-    });
-
     test('sorts by review descending', () {
       final sorted = searchService.sortProducts(products, SortOption.reviewDesc);
 

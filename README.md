@@ -1,4 +1,4 @@
-# ショッピング比較アプリ (Shopping Assistant)
+# オトクダ (Shopping Assistant)
 
 複数のECサイトから商品を横断検索し、最安値を見つけるモバイルアプリです。
 

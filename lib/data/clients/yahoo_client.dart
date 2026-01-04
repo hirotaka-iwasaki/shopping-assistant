@@ -125,11 +125,9 @@ class YahooClient implements EcClient {
       case SortOption.reviewDesc:
         params['sort'] = '-review_count';
         break;
-      case SortOption.newest:
-        params['sort'] = '-release_date';
-        break;
-      default:
+      case SortOption.relevance:
         params['sort'] = '-score';
+        break;
     }
 
     return params;
