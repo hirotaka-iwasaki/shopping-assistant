@@ -161,6 +161,18 @@ class SearchService {
           return bScore.compareTo(aScore);
         });
         break;
+      case SortOption.reviewCountDesc:
+        sorted.sort((a, b) {
+          final aCount = a.reviewCount ?? 0;
+          final bCount = b.reviewCount ?? 0;
+          if (aCount == bCount) {
+            final aScore = a.reviewScore ?? 0;
+            final bScore = b.reviewScore ?? 0;
+            return bScore.compareTo(aScore);
+          }
+          return bCount.compareTo(aCount);
+        });
+        break;
       case SortOption.relevance:
         // Keep original order
         break;

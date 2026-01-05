@@ -133,6 +133,9 @@ class RakutenClient implements EcClient {
       case SortOption.reviewDesc:
         params['sort'] = '-reviewAverage';
         break;
+      case SortOption.reviewCountDesc:
+        params['sort'] = '-reviewCount';
+        break;
       case SortOption.relevance:
       case SortOption.unitPriceAsc:
         // Unit price sort is done client-side after fetching

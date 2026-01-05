@@ -140,6 +140,13 @@ class ProductRepository {
           return bScore.compareTo(aScore);
         });
         break;
+      case SortOption.reviewCountDesc:
+        products.sort((a, b) {
+          final aCount = a.reviewCount ?? 0;
+          final bCount = b.reviewCount ?? 0;
+          return bCount.compareTo(aCount);
+        });
+        break;
       case SortOption.unitPriceAsc:
         // Unit price sort requires unit info parsing, done in SearchService
         // Fall through to relevance for initial sort

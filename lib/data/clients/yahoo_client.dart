@@ -123,6 +123,9 @@ class YahooClient implements EcClient {
         params['sort'] = '-price';
         break;
       case SortOption.reviewDesc:
+        params['sort'] = '-review_average';
+        break;
+      case SortOption.reviewCountDesc:
         params['sort'] = '-review_count';
         break;
       case SortOption.relevance:

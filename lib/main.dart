@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/theme/app_theme.dart';
 import 'presentation/providers/settings_provider.dart';
 import 'presentation/screens/search_screen.dart';
 
@@ -22,20 +23,8 @@ class ShoppingAssistantApp extends ConsumerWidget {
     return MaterialApp(
       title: 'ヨコダン',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
       themeMode: themeModeAsync.when(
         data: (mode) => _getThemeMode(mode),
         loading: () => ThemeMode.system,

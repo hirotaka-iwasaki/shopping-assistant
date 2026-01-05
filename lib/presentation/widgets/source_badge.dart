@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../core/core.dart';
+import '../../core/theme/app_theme.dart';
 
-/// Badge widget displaying the e-commerce source.
+/// Badge widget displaying the e-commerce source with mixi2-inspired design.
 class SourceBadge extends StatelessWidget {
   const SourceBadge({
     super.key,
@@ -23,13 +24,21 @@ class SourceBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: _getBackgroundColor(),
         borderRadius: BorderRadius.circular(size.borderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: _getBackgroundColor().withOpacity(0.3),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Text(
         _getShortName(),
         style: TextStyle(
           color: Colors.white,
           fontSize: size.fontSize,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
         ),
       ),
     );
@@ -63,9 +72,24 @@ class SourceBadge extends StatelessWidget {
 }
 
 enum SourceBadgeSize {
-  small(fontSize: 10, horizontalPadding: 6, verticalPadding: 2, borderRadius: 4),
-  medium(fontSize: 12, horizontalPadding: 8, verticalPadding: 4, borderRadius: 6),
-  large(fontSize: 14, horizontalPadding: 12, verticalPadding: 6, borderRadius: 8);
+  small(
+    fontSize: 10,
+    horizontalPadding: 8,
+    verticalPadding: 4,
+    borderRadius: AppTheme.radiusFull,
+  ),
+  medium(
+    fontSize: 12,
+    horizontalPadding: 10,
+    verticalPadding: 5,
+    borderRadius: AppTheme.radiusFull,
+  ),
+  large(
+    fontSize: 14,
+    horizontalPadding: 14,
+    verticalPadding: 6,
+    borderRadius: AppTheme.radiusFull,
+  );
 
   const SourceBadgeSize({
     required this.fontSize,
@@ -80,8 +104,8 @@ enum SourceBadgeSize {
   final double borderRadius;
 }
 
-/// Chip for selecting/deselecting a source.
-class SourceChip extends StatelessWidget {
+/// Chip for selecting/deselecting a source with mixi2-inspired design.
+class SourceChip extends StatefulWidget {
   const SourceChip({
     super.key,
     required this.source,
@@ -94,22 +118,71 @@ class SourceChip extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<SourceChip> createState() => _SourceChipState();
+}
+
+class _SourceChipState extends State<SourceChip> {
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return FilterChip(
-      label: Text(source.displayName),
-      selected: isSelected,
-      onSelected: (_) => onTap(),
-      selectedColor: _getSelectedColor().withOpacity(0.2),
-      checkmarkColor: _getSelectedColor(),
-      labelStyle: TextStyle(
-        color: isSelected ? _getSelectedColor() : null,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+    final colorScheme = Theme.of(context).colorScheme;
+    final sourceColor = _getSelectedColor();
+
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.95 : 1.0,
+        duration: AppTheme.animFast,
+        child: AnimatedContainer(
+          duration: AppTheme.animNormal,
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMd,
+            vertical: AppTheme.spacingSm,
+          ),
+          decoration: BoxDecoration(
+            color: widget.isSelected
+                ? sourceColor.withOpacity(0.15)
+                : colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+            border: Border.all(
+              color: widget.isSelected ? sourceColor : Colors.transparent,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.isSelected) ...[
+                Icon(
+                  Icons.check_rounded,
+                  size: 16,
+                  color: sourceColor,
+                ),
+                const SizedBox(width: AppTheme.spacingXs),
+              ],
+              Text(
+                widget.source.displayName,
+                style: TextStyle(
+                  color: widget.isSelected ? sourceColor : colorScheme.onSurface,
+                  fontSize: 13,
+                  fontWeight:
+                      widget.isSelected ? FontWeight.w600 : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Color _getSelectedColor() {
-    switch (source) {
+    switch (widget.source) {
       case EcSource.amazon:
         return const Color(0xFFFF9900);
       case EcSource.rakuten:

@@ -68,7 +68,10 @@ enum SortOption {
   relevance('関連度順'),
 
   /// Highest review score first
-  reviewDesc('レビュー順');
+  reviewDesc('評価順'),
+
+  /// Most reviewed first
+  reviewCountDesc('レビュー数順');
 
   const SortOption(this.displayName);
   final String displayName;

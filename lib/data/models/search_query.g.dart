@@ -47,4 +47,5 @@ const _$SortOptionEnumMap = {
   SortOption.priceDesc: 'priceDesc',
   SortOption.relevance: 'relevance',
   SortOption.reviewDesc: 'reviewDesc',
+  SortOption.reviewCountDesc: 'reviewCountDesc',
 };

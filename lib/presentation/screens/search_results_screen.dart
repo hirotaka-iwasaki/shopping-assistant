@@ -2,12 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/core.dart';
+import '../../core/theme/app_theme.dart';
 import '../../data/data.dart';
 import '../providers/search_provider.dart';
 import '../widgets/loading_indicator.dart';
 import '../widgets/product_expansion_tile.dart';
+import '../widgets/product_large_card.dart';
 
-/// Screen displaying search results.
+/// View mode for product list.
+enum ProductViewMode { compact, large }
+
+/// Provider for the current view mode.
+final productViewModeProvider = StateProvider<ProductViewMode>(
+  (ref) => ProductViewMode.compact,
+);
+
+/// Screen displaying search results with mixi2-inspired design.
 class SearchResultsScreen extends ConsumerWidget {
   const SearchResultsScreen({super.key});
 
@@ -16,14 +26,30 @@ class SearchResultsScreen extends ConsumerWidget {
     final searchState = ref.watch(searchStateProvider);
     final filteredProducts = ref.watch(filteredProductsProvider);
     final sortOption = ref.watch(sortOptionProvider);
+    final viewMode = ref.watch(productViewModeProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(searchState.query?.keyword ?? '検索結果'),
         actions: [
+          // View mode toggle
+          IconButton(
+            icon: Icon(
+              viewMode == ProductViewMode.compact
+                  ? Icons.view_agenda_outlined
+                  : Icons.view_list_outlined,
+            ),
+            onPressed: () {
+              ref.read(productViewModeProvider.notifier).state =
+                  viewMode == ProductViewMode.compact
+                      ? ProductViewMode.large
+                      : ProductViewMode.compact;
+            },
+            tooltip: viewMode == ProductViewMode.compact ? '大きく表示' : 'コンパクト表示',
+          ),
           // Sort button
           PopupMenuButton<SortOption>(
-            icon: const Icon(Icons.sort),
+            icon: const Icon(Icons.sort_rounded),
             initialValue: sortOption,
             onSelected: (option) {
               ref.read(searchStateProvider.notifier).updateSort(option);
@@ -34,10 +60,14 @@ class SearchResultsScreen extends ConsumerWidget {
                 child: Row(
                   children: [
                     if (option == sortOption)
-                      const Icon(Icons.check, size: 18)
+                      Icon(
+                        Icons.check_rounded,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.primary,
+                      )
                     else
                       const SizedBox(width: 18),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppTheme.spacingSm),
                     Text(option.displayName),
                   ],
                 ),
@@ -70,7 +100,7 @@ class SearchResultsScreen extends ConsumerWidget {
     if (products.isEmpty) {
       return const EmptyDisplay(
         message: '検索結果がありません\n別のキーワードで検索してください',
-        icon: Icons.search_off,
+        icon: Icons.search_off_rounded,
       );
     }
 
@@ -84,23 +114,31 @@ class SearchResultsScreen extends ConsumerWidget {
           // Results count and unit price availability
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+              padding: const EdgeInsets.fromLTRB(
+                AppTheme.spacingLg,
+                AppTheme.spacingLg,
+                AppTheme.spacingLg,
+                AppTheme.spacingSm,
+              ),
               child: Row(
                 children: [
                   Text(
                     '${products.length}件の商品',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.outline,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppTheme.spacingSm),
                   _buildUnitPriceStats(context, products),
                   const Spacer(),
                   if (searchState.isLoading)
-                    const SizedBox(
+                    SizedBox(
                       width: 16,
                       height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                 ],
               ),
@@ -110,10 +148,15 @@ class SearchResultsScreen extends ConsumerWidget {
           if (availableSources.isNotEmpty)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                padding: const EdgeInsets.fromLTRB(
+                  AppTheme.spacingLg,
+                  AppTheme.spacingXs,
+                  AppTheme.spacingLg,
+                  AppTheme.spacingMd,
+                ),
                 child: Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
+                  spacing: AppTheme.spacingSm,
+                  runSpacing: AppTheme.spacingSm,
                   children: availableSources.entries.map((entry) {
                     final source = entry.key;
                     final count = entry.value;
@@ -141,6 +184,10 @@ class SearchResultsScreen extends ConsumerWidget {
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 final product = products[index];
+                final viewMode = ref.watch(productViewModeProvider);
+                if (viewMode == ProductViewMode.large) {
+                  return ProductLargeCard(product: product);
+                }
                 return ProductExpansionTile(product: product);
               },
               childCount: products.length,
@@ -148,7 +195,7 @@ class SearchResultsScreen extends ConsumerWidget {
           ),
           // Bottom padding
           const SliverToBoxAdapter(
-            child: SizedBox(height: 16),
+            child: SizedBox(height: AppTheme.spacingLg),
           ),
         ],
       ),
@@ -160,25 +207,30 @@ class SearchResultsScreen extends ConsumerWidget {
     if (withUnitPrice == 0) return const SizedBox.shrink();
 
     final percentage = (withUnitPrice / products.length * 100).round();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingSm,
+        vertical: AppTheme.spacingXs,
+      ),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(4),
+        color: colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
       ),
       child: Text(
         '単価判定 $percentage%',
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSecondaryContainer,
+              color: colorScheme.onPrimaryContainer,
+              fontWeight: FontWeight.w500,
             ),
       ),
     );
   }
 }
 
-/// Filter chip for toggling source visibility.
-class _SourceFilterChip extends StatelessWidget {
+/// Filter chip for toggling source visibility with mixi2-inspired design.
+class _SourceFilterChip extends StatefulWidget {
   const _SourceFilterChip({
     required this.source,
     required this.count,
@@ -191,8 +243,15 @@ class _SourceFilterChip extends StatelessWidget {
   final bool isActive;
   final VoidCallback onTap;
 
+  @override
+  State<_SourceFilterChip> createState() => _SourceFilterChipState();
+}
+
+class _SourceFilterChipState extends State<_SourceFilterChip> {
+  bool _isPressed = false;
+
   Color _getSourceColor() {
-    switch (source) {
+    switch (widget.source) {
       case EcSource.amazon:
         return const Color(0xFFFF9900);
       case EcSource.rakuten:
@@ -207,41 +266,65 @@ class _SourceFilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _getSourceColor();
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Material(
-      color: isActive ? color : Colors.grey.shade300,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.95 : 1.0,
+        duration: AppTheme.animFast,
+        child: AnimatedContainer(
+          duration: AppTheme.animNormal,
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMd,
+            vertical: AppTheme.spacingSm,
+          ),
+          decoration: BoxDecoration(
+            color: widget.isActive ? color : colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+            boxShadow: widget.isActive
+                ? [
+                    BoxShadow(
+                      color: color.withOpacity(0.3),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                source.displayName,
+                widget.source.displayName,
                 style: TextStyle(
-                  color: isActive ? Colors.white : Colors.grey.shade600,
+                  color: widget.isActive ? Colors.white : colorScheme.onSurfaceVariant,
                   fontSize: 12,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: AppTheme.spacingXs),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacingSm,
+                  vertical: 2,
+                ),
                 decoration: BoxDecoration(
-                  color: isActive
-                      ? Colors.white.withValues(alpha: 0.3)
-                      : Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(8),
+                  color: widget.isActive
+                      ? Colors.white.withOpacity(0.25)
+                      : colorScheme.outline.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                 ),
                 child: Text(
-                  '$count',
+                  '${widget.count}',
                   style: TextStyle(
-                    color: isActive ? Colors.white : Colors.grey.shade600,
+                    color: widget.isActive ? Colors.white : colorScheme.onSurfaceVariant,
                     fontSize: 10,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),

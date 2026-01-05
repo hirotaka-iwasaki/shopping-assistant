@@ -109,16 +109,16 @@ class Product with _$Product {
   }
 
   /// Unit price (per 100g/100ml or per item).
-  /// Returns null if unit info is not available.
+  /// Returns null if unit info is not available or confidence is too low.
   double? get unitPrice {
-    if (unitInfo == null) return null;
+    if (unitInfo == null || unitInfo!.isLowConfidence) return null;
     return unitInfo!.calculateUnitPrice(effectivePrice);
   }
 
   /// Formatted unit price string (e.g., "¥198/100g").
-  /// Returns null if unit info is not available.
+  /// Returns null if unit info is not available or confidence is too low.
   String? get formattedUnitPrice {
-    if (unitInfo == null) return null;
+    if (unitInfo == null || unitInfo!.isLowConfidence) return null;
     return unitInfo!.formatUnitPrice(effectivePrice);
   }
 

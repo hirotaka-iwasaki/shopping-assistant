@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/core.dart';
+import '../../core/theme/app_theme.dart';
 
 /// Loading indicator with optional message.
 class LoadingIndicator extends StatelessWidget {
@@ -13,16 +14,27 @@ class LoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CircularProgressIndicator(),
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              color: colorScheme.primary,
+            ),
+          ),
           if (message != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.spacingLg),
             Text(
               message!,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
             ),
           ],
         ],
@@ -31,26 +43,75 @@ class LoadingIndicator extends StatelessWidget {
   }
 }
 
-/// Loading indicator for search results.
-class SearchLoadingIndicator extends StatelessWidget {
+/// Loading indicator for search results with mixi2-inspired animation.
+class SearchLoadingIndicator extends StatefulWidget {
   const SearchLoadingIndicator({super.key});
 
   @override
+  State<SearchLoadingIndicator> createState() => _SearchLoadingIndicatorState();
+}
+
+class _SearchLoadingIndicatorState extends State<SearchLoadingIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat(reverse: true);
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Center(
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('商品を検索中...'),
+          ScaleTransition(
+            scale: _scaleAnimation,
+            child: Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              ),
+              child: Icon(
+                Icons.search_rounded,
+                size: 32,
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacingXl),
+          Text(
+            '商品を検索中...',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+          ),
         ],
       ),
     );
   }
 }
 
-/// Error display widget.
+/// Error display widget with mixi2-inspired design.
 class ErrorDisplay extends StatelessWidget {
   const ErrorDisplay({
     super.key,
@@ -64,29 +125,41 @@ class ErrorDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppTheme.spacingXxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: colorScheme.error,
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: colorScheme.errorContainer.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              ),
+              child: Icon(
+                Icons.error_outline_rounded,
+                size: 36,
+                color: colorScheme.error,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.spacingLg),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(color: colorScheme.error),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             if (onRetry != null) ...[
-              const SizedBox(height: 16),
-              FilledButton.tonal(
+              const SizedBox(height: AppTheme.spacingXl),
+              FilledButton.icon(
                 onPressed: onRetry,
-                child: const Text('再試行'),
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('再試行'),
               ),
             ],
           ],
@@ -96,7 +169,7 @@ class ErrorDisplay extends StatelessWidget {
   }
 }
 
-/// Empty state display.
+/// Empty state display with mixi2-inspired design.
 class EmptyDisplay extends StatelessWidget {
   const EmptyDisplay({
     super.key,
@@ -112,28 +185,38 @@ class EmptyDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppTheme.spacingXxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon ?? Icons.search_off,
-              size: 64,
-              color: colorScheme.outline,
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+              ),
+              child: Icon(
+                icon ?? Icons.search_off_rounded,
+                size: 40,
+                color: colorScheme.outline,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.spacingLg),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.outline,
-                  ),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                height: 1.5,
+              ),
             ),
             if (action != null) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.spacingXl),
               action!,
             ],
           ],
@@ -143,7 +226,7 @@ class EmptyDisplay extends StatelessWidget {
   }
 }
 
-/// Source-specific status indicator.
+/// Source-specific status indicator with mixi2-inspired design.
 class SourceStatusIndicator extends StatelessWidget {
   const SourceStatusIndicator({
     super.key,
@@ -163,10 +246,13 @@ class SourceStatusIndicator extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingMd,
+        vertical: AppTheme.spacingSm,
+      ),
       decoration: BoxDecoration(
         color: _getBackgroundColor(colorScheme),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
         border: Border.all(
           color: _getBorderColor(colorScheme),
         ),
@@ -175,16 +261,17 @@ class SourceStatusIndicator extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildStatusIcon(colorScheme),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppTheme.spacingSm),
           Text(
             source.displayName,
             style: TextStyle(
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
               color: _getTextColor(colorScheme),
+              fontSize: 13,
             ),
           ),
           if (count != null) ...[
-            const SizedBox(width: 4),
+            const SizedBox(width: AppTheme.spacingXs),
             Text(
               '($count)',
               style: TextStyle(
@@ -212,16 +299,16 @@ class SourceStatusIndicator extends StatelessWidget {
 
     if (error != null) {
       return Icon(
-        Icons.error_outline,
+        Icons.error_outline_rounded,
         size: 16,
         color: colorScheme.error,
       );
     }
 
     return Icon(
-      Icons.check_circle,
+      Icons.check_circle_rounded,
       size: 16,
-      color: Colors.green.shade600,
+      color: AppTheme.success,
     );
   }
 

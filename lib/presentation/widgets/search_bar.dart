@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Custom search bar widget.
+import '../../core/theme/app_theme.dart';
+
+/// Custom search bar widget with mixi2-inspired pill design.
 class AppSearchBar extends StatefulWidget {
   const AppSearchBar({
     super.key,
@@ -24,16 +26,23 @@ class AppSearchBar extends StatefulWidget {
 class _AppSearchBarState extends State<AppSearchBar> {
   late final TextEditingController _controller;
   late final FocusNode _focusNode;
+  bool _isFocused = false;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialValue);
     _focusNode = FocusNode();
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    setState(() => _isFocused = _focusNode.hasFocus);
   }
 
   @override
   void dispose() {
+    _focusNode.removeListener(_onFocusChange);
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -57,43 +66,79 @@ class _AppSearchBarState extends State<AppSearchBar> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return TextField(
-      controller: _controller,
-      focusNode: _focusNode,
-      autofocus: widget.autofocus,
-      textInputAction: TextInputAction.search,
-      onSubmitted: _onSubmitted,
-      onChanged: widget.onChanged,
-      decoration: InputDecoration(
-        hintText: widget.hintText,
-        prefixIcon: const Icon(Icons.search),
-        suffixIcon: ValueListenableBuilder<TextEditingValue>(
-          valueListenable: _controller,
-          builder: (context, value, child) {
-            if (value.text.isEmpty) return const SizedBox.shrink();
-            return IconButton(
-              icon: const Icon(Icons.clear),
-              onPressed: _clear,
-            );
-          },
+    return AnimatedContainer(
+      duration: AppTheme.animNormal,
+      curve: Curves.easeOut,
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+        border: Border.all(
+          color: _isFocused ? colorScheme.primary : Colors.transparent,
+          width: 2,
         ),
-        filled: true,
-        fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.5),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+        boxShadow: _isFocused
+            ? [
+                BoxShadow(
+                  color: colorScheme.primary.withOpacity(0.1),
+                  blurRadius: 8,
+                  spreadRadius: 0,
+                ),
+              ]
+            : null,
+      ),
+      child: TextField(
+        controller: _controller,
+        focusNode: _focusNode,
+        autofocus: widget.autofocus,
+        textInputAction: TextInputAction.search,
+        onSubmitted: _onSubmitted,
+        onChanged: widget.onChanged,
+        style: TextStyle(
+          fontSize: 15,
+          color: colorScheme.onSurface,
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+        decoration: InputDecoration(
+          hintText: widget.hintText,
+          hintStyle: TextStyle(
+            color: colorScheme.outline,
+            fontSize: 15,
+          ),
+          prefixIcon: AnimatedContainer(
+            duration: AppTheme.animNormal,
+            child: Icon(
+              Icons.search_rounded,
+              color: _isFocused ? colorScheme.primary : colorScheme.outline,
+            ),
+          ),
+          suffixIcon: ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _controller,
+            builder: (context, value, child) {
+              if (value.text.isEmpty) return const SizedBox.shrink();
+              return IconButton(
+                icon: Icon(
+                  Icons.cancel_rounded,
+                  color: colorScheme.outline,
+                  size: 20,
+                ),
+                onPressed: _clear,
+              );
+            },
+          ),
+          filled: false,
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingLg,
+            vertical: AppTheme.spacingMd,
+          ),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     );
   }
 }
 
-/// Search suggestions dropdown.
+/// Search suggestions dropdown with mixi2-inspired design.
 class SearchSuggestions extends StatelessWidget {
   const SearchSuggestions({
     super.key,
@@ -110,22 +155,66 @@ class SearchSuggestions extends StatelessWidget {
   Widget build(BuildContext context) {
     if (suggestions.isEmpty) return const SizedBox.shrink();
 
-    return Material(
-      elevation: 4,
-      borderRadius: BorderRadius.circular(12),
-      child: ListView.builder(
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        border: Border.all(
+          color: colorScheme.outlineVariant,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: ListView.separated(
         shrinkWrap: true,
-        padding: EdgeInsets.zero,
+        padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
         itemCount: suggestions.length,
+        separatorBuilder: (context, index) => Divider(
+          height: 1,
+          indent: AppTheme.spacingLg,
+          endIndent: AppTheme.spacingLg,
+          color: colorScheme.outlineVariant,
+        ),
         itemBuilder: (context, index) {
           final suggestion = suggestions[index];
           return ListTile(
-            leading: const Icon(Icons.history),
-            title: Text(suggestion),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingLg,
+            ),
+            leading: Icon(
+              Icons.history_rounded,
+              color: colorScheme.outline,
+              size: 20,
+            ),
+            title: Text(
+              suggestion,
+              style: TextStyle(
+                color: colorScheme.onSurface,
+                fontSize: 14,
+              ),
+            ),
             trailing: onDelete != null
                 ? IconButton(
-                    icon: const Icon(Icons.close, size: 18),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: colorScheme.outline,
+                    ),
                     onPressed: () => onDelete!(suggestion),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
                   )
                 : null,
             onTap: () => onSelect(suggestion),
