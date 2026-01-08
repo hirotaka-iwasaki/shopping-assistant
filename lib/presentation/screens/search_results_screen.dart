@@ -6,16 +6,7 @@ import '../../core/theme/app_theme.dart';
 import '../../data/data.dart';
 import '../providers/search_provider.dart';
 import '../widgets/loading_indicator.dart';
-import '../widgets/product_expansion_tile.dart';
 import '../widgets/product_large_card.dart';
-
-/// View mode for product list.
-enum ProductViewMode { compact, large }
-
-/// Provider for the current view mode.
-final productViewModeProvider = StateProvider<ProductViewMode>(
-  (ref) => ProductViewMode.compact,
-);
 
 /// Screen displaying search results with mixi2-inspired design.
 class SearchResultsScreen extends ConsumerWidget {
@@ -26,27 +17,11 @@ class SearchResultsScreen extends ConsumerWidget {
     final searchState = ref.watch(searchStateProvider);
     final filteredProducts = ref.watch(filteredProductsProvider);
     final sortOption = ref.watch(sortOptionProvider);
-    final viewMode = ref.watch(productViewModeProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(searchState.query?.keyword ?? '検索結果'),
         actions: [
-          // View mode toggle
-          IconButton(
-            icon: Icon(
-              viewMode == ProductViewMode.compact
-                  ? Icons.view_agenda_outlined
-                  : Icons.view_list_outlined,
-            ),
-            onPressed: () {
-              ref.read(productViewModeProvider.notifier).state =
-                  viewMode == ProductViewMode.compact
-                      ? ProductViewMode.large
-                      : ProductViewMode.compact;
-            },
-            tooltip: viewMode == ProductViewMode.compact ? '大きく表示' : 'コンパクト表示',
-          ),
           // Sort button
           PopupMenuButton<SortOption>(
             icon: const Icon(Icons.sort_rounded),
@@ -184,11 +159,7 @@ class SearchResultsScreen extends ConsumerWidget {
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 final product = products[index];
-                final viewMode = ref.watch(productViewModeProvider);
-                if (viewMode == ProductViewMode.large) {
-                  return ProductLargeCard(product: product);
-                }
-                return ProductExpansionTile(product: product);
+                return ProductLargeCard(product: product);
               },
               childCount: products.length,
             ),
