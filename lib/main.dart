@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_theme.dart';
 import 'presentation/providers/settings_provider.dart';
-import 'presentation/screens/search_screen.dart';
+import 'presentation/screens/main_shell.dart';
 
 void main() {
   runApp(
@@ -30,7 +30,7 @@ class ShoppingAssistantApp extends ConsumerWidget {
         loading: () => ThemeMode.system,
         error: (_, _) => ThemeMode.system,
       ),
-      home: const SearchScreen(),
+      home: const MainShell(),
     );
   }
 

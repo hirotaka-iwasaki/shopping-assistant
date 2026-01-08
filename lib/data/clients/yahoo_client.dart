@@ -60,31 +60,54 @@ class YahooClient implements EcClient {
     if (!EnvConfig.hasYahooConfig) return null;
 
     try {
+      // Yahoo商品コードで検索
+      // queryパラメータで商品コードを検索（item_codeは seller_item形式が必要なため）
       final response = await _dio.get(
         '',
         queryParameters: {
           'appid': _appId,
           if (_affiliateId.isNotEmpty) 'affiliate_id': _affiliateId,
-          'jan_code': id,
-          'results': 1,
+          if (_affiliateId.isNotEmpty) 'affiliate_type': 'vc',
+          'query': id,
+          'results': 10,
         },
       );
 
       final data = response.data as Map<String, dynamic>;
       final hits = data['hits'] as List?;
 
+      AppLogger.debug(
+        'Yahoo getProduct for id=$id, hits=${hits?.length ?? 0}',
+        tag: 'YahooClient',
+      );
+
       if (hits == null || hits.isEmpty) return null;
+
+      // 商品コードが一致するものを探す
+      for (final hit in hits) {
+        final item = hit as Map<String, dynamic>;
+        final code = item['code'] as String?;
+        if (code == id) {
+          return _parseItem(item);
+        }
+      }
+
+      // 完全一致がなければ最初の結果を返す（フォールバック）
+      AppLogger.warning(
+        'Yahoo getProduct: exact match not found for id=$id, using first result',
+        tag: 'YahooClient',
+      );
       return _parseItem(hits.first as Map<String, dynamic>);
     } on DioException catch (e) {
       final error = DioClient.handleError(e, EcSource.yahoo.displayName);
       AppLogger.error(
-        'Yahoo getProduct failed',
+        'Yahoo getProduct failed for id=$id',
         tag: 'YahooClient',
         error: error,
       );
       return null;
     } catch (e) {
-      AppLogger.error('Yahoo getProduct failed', tag: 'YahooClient', error: e);
+      AppLogger.error('Yahoo getProduct failed for id=$id', tag: 'YahooClient', error: e);
       return null;
     }
   }

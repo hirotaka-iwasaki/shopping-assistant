@@ -6,8 +6,8 @@ import '../providers/search_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/loading_indicator.dart';
 import '../widgets/search_bar.dart';
+import 'main_shell.dart';
 import 'search_results_screen.dart';
-import 'settings_screen.dart';
 
 /// Main search screen with search bar and history.
 class SearchScreen extends ConsumerStatefulWidget {
@@ -20,7 +20,8 @@ class SearchScreen extends ConsumerStatefulWidget {
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   void _onSearch(String keyword) {
     ref.read(searchStateProvider.notifier).search(keyword);
-    Navigator.of(context).push(
+    // Use tab navigator to keep BottomNavigationBar visible
+    homeNavigatorKey.currentState?.push(
       MaterialPageRoute(
         builder: (context) => const SearchResultsScreen(),
       ),
@@ -34,18 +35,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('ヨコダン'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_rounded),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: SafeArea(
         child: Column(

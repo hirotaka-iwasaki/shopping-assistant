@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/data.dart';
+import '../providers/favorites_provider.dart';
 import '../widgets/source_badge.dart';
 
 /// Screen displaying product details.
@@ -174,13 +176,22 @@ class ProductDetailScreen extends StatelessWidget {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: FilledButton.icon(
-            onPressed: _openProductPage,
-            icon: const Icon(Icons.open_in_new),
-            label: Text('${product.source.displayName}で見る'),
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // お気に入りボタン
+              _FavoriteActionButton(product: product),
+              const SizedBox(height: 12),
+              // ショップで見るボタン
+              FilledButton.icon(
+                onPressed: _openProductPage,
+                icon: const Icon(Icons.open_in_new),
+                label: Text('${product.source.displayName}で見る'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -344,5 +355,36 @@ class ProductDetailScreen extends StatelessWidget {
           RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
           (match) => '${match[1]},',
         );
+  }
+}
+
+/// Large favorite action button for bottom bar.
+class _FavoriteActionButton extends ConsumerWidget {
+  const _FavoriteActionButton({required this.product});
+
+  final Product product;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isFavorite = ref.watch(isFavoriteProvider((product.id, product.source)));
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return OutlinedButton.icon(
+      onPressed: () {
+        ref.read(favoritesProvider.notifier).toggle(product);
+      },
+      icon: Icon(
+        isFavorite ? Icons.favorite : Icons.favorite_border,
+        color: isFavorite ? Colors.red : colorScheme.onSurface,
+      ),
+      label: Text(isFavorite ? 'お気に入りから削除' : 'お気に入りに追加'),
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size.fromHeight(48),
+        foregroundColor: isFavorite ? Colors.red : colorScheme.onSurface,
+        side: BorderSide(
+          color: isFavorite ? Colors.red.withValues(alpha: 0.5) : colorScheme.outline,
+        ),
+      ),
+    );
   }
 }

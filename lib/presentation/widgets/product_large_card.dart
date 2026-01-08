@@ -1,10 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/core.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/data.dart';
+import '../screens/product_detail_screen.dart';
+import 'favorite_button.dart';
 import 'source_badge.dart';
 
 /// Large product card for detailed view (1 column layout).
@@ -47,7 +48,7 @@ class _ProductLargeCardState extends State<ProductLargeCard> {
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) => setState(() => _isPressed = false),
       onTapCancel: () => setState(() => _isPressed = false),
-      onTap: () => _openProductPage(context),
+      onTap: () => _navigateToDetail(context),
       child: AnimatedScale(
         scale: _isPressed ? 0.98 : 1.0,
         duration: AppTheme.animFast,
@@ -281,6 +282,15 @@ class _ProductLargeCardState extends State<ProductLargeCard> {
                 ),
               ),
             ),
+          // Favorite button
+          Positioned(
+            top: 4,
+            right: 4,
+            child: FavoriteButton(
+              product: widget.product,
+              size: 28,
+            ),
+          ),
         ],
       ),
     );
@@ -351,22 +361,11 @@ class _ProductLargeCardState extends State<ProductLargeCard> {
     );
   }
 
-  Future<void> _openProductPage(BuildContext context) async {
-    final url = Uri.parse(widget.product.productUrl);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('ページを開けませんでした'),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-            ),
-          ),
-        );
-      }
-    }
+  void _navigateToDetail(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ProductDetailScreen(product: widget.product),
+      ),
+    );
   }
 }
